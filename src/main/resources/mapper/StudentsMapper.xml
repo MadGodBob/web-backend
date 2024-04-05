@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="redlib.backend.dao.StudentsMapper">
+  <resultMap id="BaseResultMap" type="redlib.backend.model.Students">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="studentID" jdbcType="INTEGER" property="studentid" />
+    <result column="class_ID" jdbcType="VARCHAR" property="classId" />
+    <result column="class_name" jdbcType="VARCHAR" property="className" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, name, studentID, class_ID, class_name
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from students
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from students
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="redlib.backend.model.Students">
+    insert into students (name, studentID,
+      class_ID, class_name)
+    values (#{name,jdbcType=VARCHAR}, #{studentid,jdbcType=INTEGER},
+      #{classId,jdbcType=VARCHAR}, #{className,jdbcType=VARCHAR})
+  </insert>
+
+
+  <update id="updateByPrimaryKey" parameterType="redlib.backend.model.Students">
+    update students
+    set name = #{name,jdbcType=VARCHAR},
+      studentID = #{studentid,jdbcType=INTEGER},
+      class_ID = #{classId,jdbcType=VARCHAR},
+      class_name = #{className,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 获取名字个数(分页) -->
+  <select id="count" resultType="integer">
+    select count(*)
+    from students
+    where 1
+    <if test="name != null">
+      and name like #{name}
+    </if>
+    <if test="classId != null">
+      and class_ID like #{classId}
+    </if>
+    <if test="className != null">
+      and class_name like #{className}
+    </if>
+    <if test="studentid != null and studentid != 0">
+      and studentID = #{studentid}
+    </if>
+  </select>
+
+  <!-- 获取学生(分页) -->
+  <select id="list" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from students
+    where 1
+      <if test="queryDTO.name != null">
+        and name like #{queryDTO.name}
+      </if>
+      <if test="queryDTO.classId != null">
+        and class_ID like #{queryDTO.classId}
+      </if>
+      <if test="queryDTO.className != null">
+        and class_name like #{queryDTO.className}
+      </if>
+      <if test="queryDTO.studentid != 0 and queryDTO.studentid != null">
+        and studentID = #{queryDTO.studentid}
+      </if>
+    limit #{offset}, #{limit}
+  </select>
+
+  <!-- 获取指定班级的学生列表 -->
+  <select id="listStudents" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from students
+    <where>
+      class_ID like #{classId}
+    </where>
+    limit #{offset}, #{limit}
+  </select>
+
+  <!-- 获取已提交的学生个数 -->
+  <select id="countSubmitted" resultType="integer">
+    select count(*)
+    from students
+    where class_id = #{classId}
+      and studentID
+      in (select studentID from submission where task_id = #{taskId});
+  </select>
+
+  <!-- 获取已提交的学生列表 -->
+  <select id="getSubmitted" resultMap="BaseResultMap">
+    select *
+    from students
+    where class_id = #{classId}
+      and studentID
+      in (select studentID from submission where task_id = #{taskId});
+  </select>
+
+  <!-- 获取未提交的学生个数 -->
+  <select id="countUnSubmitted" resultType="integer">
+    select count(*)
+    from students
+    where class_id = #{classId}
+      and studentID
+      not in (select studentID from submission where task_id = #{taskId});
+  </select>
+
+  <!-- 获取未提交的学生列表 -->
+  <select id="getUnSubmitted" resultMap="BaseResultMap">
+    select *
+    from students
+    where class_id = #{classId}
+      and studentID
+      not in (select studentID from submission where task_id = #{taskId});
+  </select>
+
+</mapper>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="redlib.backend.dao.SubmissionMapper">
+  <resultMap id="BaseResultMap" type="redlib.backend.model.Submission">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="studentID" jdbcType="INTEGER" property="studentid" />
+    <result column="class_ID" jdbcType="VARCHAR" property="classId" />
+    <result column="class_name" jdbcType="VARCHAR" property="className" />
+    <result column="task_id" jdbcType="VARCHAR" property="taskId" />
+    <result column="answer" jdbcType="VARCHAR" property="answer" />
+    <result column="submit_at" jdbcType="TIMESTAMP" property="submitAt" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="redlib.backend.model.Submission">
+    <result column="img" jdbcType="LONGVARBINARY" property="img" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, name, studentID, class_ID, class_name, task_id, answer, submit_at
+  </sql>
+  <sql id="Blob_Column_List">
+    img
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from submission
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from submission
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="redlib.backend.model.Submission">
+    insert into submission (name, studentID,
+      class_ID, class_name, task_id, 
+      answer, submit_at, img
+      )
+    values (#{name,jdbcType=VARCHAR}, #{studentid,jdbcType=INTEGER},
+      #{classId,jdbcType=VARCHAR}, #{className,jdbcType=VARCHAR}, #{taskId,jdbcType=VARCHAR}, 
+      #{answer,jdbcType=VARCHAR}, #{submitAt,jdbcType=TIMESTAMP}, #{img,jdbcType=LONGVARBINARY}
+      )
+  </insert>
+
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="redlib.backend.model.Submission">
+    update submission
+    set name = #{name,jdbcType=VARCHAR},
+      studentID = #{studentid,jdbcType=INTEGER},
+      class_ID = #{classId,jdbcType=VARCHAR},
+      class_name = #{className,jdbcType=VARCHAR},
+      task_id = #{taskId,jdbcType=VARCHAR},
+      answer = #{answer,jdbcType=VARCHAR},
+      submit_at = #{submitAt,jdbcType=TIMESTAMP},
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 获取提交个数(分页) -->
+  <select id="count" resultType="integer">
+    select count(*)
+    from submission
+    where 1
+    <if test="name != null">
+      and name like #{name}
+    </if>
+    <if test="studentid != null and studentid != 0">
+      and studentID = #{studentid}
+    </if>
+    <if test="classId != null">
+      and class_ID like #{classId}
+    </if>
+    <if test="className != null">
+      and class_name like #{className}
+    </if>
+    <if test="taskId != null">
+      and task_id like #{taskId}
+    </if>
+  </select>
+
+  <!-- 获取提交页面(分页) -->
+  <select id="list" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from submission
+    where 1
+    <if test="queryDTO.name != null">
+      and name like #{queryDTO.name}
+    </if>
+    <if test="queryDTO.studentid != null and queryDTO.studentid != 0">
+      and studentID = #{queryDTO.studentid}
+    </if>
+    <if test="queryDTO.classId != null">
+      and class_ID like #{queryDTO.classId}
+    </if>
+    <if test="queryDTO.className != null">
+      and class_name like #{queryDTO.className}
+    </if>
+    <if test="queryDTO.taskId != null">
+      and task_id like #{queryDTO.taskId}
+    </if>
+    limit #{offset}, #{limit}
+  </select>
+
+  <!-- 清空提交列表 -->
+  <select id="clear">
+    truncate table submission
+  </select>
+
+</mapper>

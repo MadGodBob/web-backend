@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="redlib.backend.dao.ClassTaskMapper">
+  <resultMap id="BaseResultMap" type="redlib.backend.model.ClassTask">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="class_id" jdbcType="VARCHAR" property="classId" />
+    <result column="class_name" jdbcType="VARCHAR" property="className" />
+    <result column="task_id" jdbcType="VARCHAR" property="taskId" />
+    <result column="task_description" jdbcType="VARCHAR" property="taskDescription" />
+    <result column="task_state" jdbcType="VARCHAR" property="taskState" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, class_id, class_name, task_id, task_description, task_state, created_at
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from class_task
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from class_task
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="redlib.backend.model.ClassTask">
+    insert into class_task (class_id, class_name,
+      task_id, task_description, task_state, 
+      created_at)
+    values (#{classId,jdbcType=VARCHAR}, #{className,jdbcType=VARCHAR},
+      #{taskId,jdbcType=VARCHAR}, #{taskDescription,jdbcType=VARCHAR}, #{taskState,jdbcType=VARCHAR}, 
+      #{createdAt,jdbcType=TIMESTAMP})
+  </insert>
+
+  <update id="updateByPrimaryKey" parameterType="redlib.backend.model.ClassTask">
+    update class_task
+    set class_id = #{classId,jdbcType=VARCHAR},
+      class_name = #{className,jdbcType=VARCHAR},
+      task_id = #{taskId,jdbcType=VARCHAR},
+      task_description = #{taskDescription,jdbcType=VARCHAR},
+      created_at = #{createdAt,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 获取任务个数(分页) -->
+  <select id="count" resultType="integer">
+    select count(*)
+    from class_task
+    where 1
+    <if test="classId != null">
+      and class_id like #{classId}
+    </if>
+    <if test="className != null">
+      and class_name like #{className}
+    </if>
+    <if test="taskId != null">
+      and task_id like #{taskId}
+    </if>
+  </select>
+
+  <!-- 获取任务个数(分页) -->
+  <select id="list" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from class_task
+    where 1
+    <if test="queryDTO.classId != null">
+      and class_id like #{queryDTO.classId}
+    </if>
+    <if test="queryDTO.className != null">
+      and class_name like #{queryDTO.className}
+    </if>
+    <if test="queryDTO.taskId != null">
+      and task_id like #{queryDTO.taskId}
+    </if>
+    limit #{offset}, #{limit}
+  </select>
+
+  <!-- 改变任务状态 -->
+  <select id="updateState" parameterType="redlib.backend.model.ClassTask">
+    update class_task set
+    task_state = #{state}
+    where id = #{ID}
+  </select>
+
+  <!-- 获取任务状态 -->
+  <select id="getState" resultType="String">
+    select task_state from class_task
+    where task_id = #{taskId}
+  </select>
+
+</mapper>
